@@ -72,3 +72,74 @@ If you prefer to use a declarative approach in NixOS, you can define the kernel 
       sha256 = "your_sha256_hash_here"; # Replace with the actual SHA-256 hash
     };
   });
+
+
+
+
+
+
+
+
+
+
+
+The string you've provided, `27b6341f43a3dc832722974ac0da39481572900b033cecdd705e78ecf546d283`, appears to be a SHA-256 hash. In the context of Nix, such a hash is crucial for verifying the integrity of downloaded files, ensuring that the content matches the expected state.
+
+**Using the SHA-256 Hash in Nix**
+
+When incorporating external sources into your Nix expressions, it's essential to specify the correct hash to maintain reproducibility and security. Here's how you can utilize the provided hash:
+
+1. **Define the Source in Your Nix Expression:**
+
+   If you're fetching a file using `fetchurl`, you can specify the URL and the corresponding SHA-256 hash:
+
+   ```nix
+   src = fetchurl {
+     url = "https://github.com/Jackler87/linux/releases/download/v51/kernel-files-6.13.0-rc5-g28753b266944.tar.gz";
+     sha256 = "27b6341f43a3dc832722974ac0da39481572900b033cecdd705e78ecf546d283";
+   };
+   ```
+
+   This configuration tells Nix to download the file from the specified URL and verifies its integrity against the provided SHA-256 hash.
+
+2. **Incorporate the Source into a Derivation:**
+
+   If you're building a package that depends on this source, include it in your derivation:
+
+   ```nix
+   { stdenv, fetchurl, ... }:
+
+   stdenv.mkDerivation {
+     name = "custom-kernel";
+     version = "6.13.0-rc5";
+
+     src = fetchurl {
+       url = "https://github.com/Jackler87/linux/releases/download/v51/kernel-files-6.13.0-rc5-g28753b266944.tar.gz";
+       sha256 = "27b6341f43a3dc832722974ac0da39481572900b033cecdd705e78ecf546d283";
+     };
+
+     # Additional build instructions...
+   }
+   ```
+
+   This setup ensures that the source is correctly fetched and verified during the build process.
+
+**Verifying the Hash**
+
+If you want to confirm that the downloaded file matches the provided hash, you can use the following command:
+
+```bash
+nix hash file /path/to/kernel-files-6.13.0-rc5-g28753b266944.tar.gz
+```
+
+Replace `/path/to/` with the actual path to your downloaded file. This command will compute the SHA-256 hash of the file, which you can compare against the provided hash to ensure they match.
+
+**Conclusion**
+
+Including the correct SHA-256 hash in your Nix expressions is vital for maintaining the integrity and reproducibility of your builds. By specifying the hash, you ensure that Nix can verify the downloaded content, preventing issues arising from content changes or tampering.
+
+For more detailed information on fetchers in Nixpkgs, you can refer to the [Fetchers documentation](https://ryantm.github.io/nixpkgs/builders/fetchers/).
+
+Additionally, discussions on the NixOS Discourse, such as [Builtins.fetchurl vs nixpkgs.fetchurl](https://discourse.nixos.org/t/builtins-fetchurl-vs-nixpkgs-fetchurl/24133), provide insights into the differences between various fetchers in Nix.
+
+*Ensure that your Nix expressions are correctly configured to maintain system stability and reproducibility.* 
