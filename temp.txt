@@ -1,0 +1,76 @@
+It seems you're encountering the error `bash: nixpkgs: no such file or directory` when attempting to set up a custom Linux kernel in NixOS. This issue typically arises when the Nix package repository (`nixpkgs`) isn't properly referenced or available in your environment. Let's address this step by step.
+
+**1. Verify Nixpkgs Availability**
+
+First, ensure that `nixpkgs` is accessible:
+
+```bash
+nix-shell -p hello
+```
+
+If this command fails with an error related to `nixpkgs`, it indicates that `nixpkgs` isn't properly set up.
+
+**2. Set the NIX_PATH Environment Variable**
+
+The `NIX_PATH` environment variable should point to your Nix channels, including `nixpkgs`. Check its current value:
+
+```bash
+echo $NIX_PATH
+```
+
+If it's empty or doesn't include `nixpkgs`, you can set it temporarily:
+
+```bash
+export NIX_PATH=nixpkgs=/path/to/nixpkgs
+```
+
+Replace `/path/to/nixpkgs` with the actual path. For a more permanent solution, add this line to your shell configuration file (e.g., `~/.bashrc`).
+
+**3. Update Nix Channels**
+
+Ensure your Nix channels are up-to-date:
+
+```bash
+nix-channel --update
+```
+
+This command updates the list of available packages and ensures `nixpkgs` is correctly referenced.
+
+**4. Verify Nixpkgs Channel**
+
+Check if the `nixpkgs` channel is correctly set:
+
+```bash
+nix-channel --list
+```
+
+You should see an entry like:
+
+```
+nixpkgs https://nixos.org/channels/nixpkgs-unstable
+```
+
+If `nixpkgs` is missing, add it:
+
+```bash
+nix-channel --add https://nixos.org/channels/nixpkgs-unstable nixpkgs
+nix-channel --update
+```
+
+**5. Rebuild Your NixOS Configuration**
+
+After ensuring `nixpkgs` is properly set, rebuild your NixOS configuration:
+
+```bash
+sudo nixos-rebuild switch
+```
+
+This applies any changes and ensures your system recognizes the updated package paths.
+
+**6. Proceed with Custom Kernel Setup**
+
+With `nixpkgs` accessible, you can proceed with setting up your custom kernel as previously outlined. Ensure that all file paths and environment variables are correctly configured to prevent similar errors.
+
+If you continue to experience issues, consider consulting the [NixOS Discourse](https://discourse.nixos.org/) or the [NixOS Wiki](https://nixos.wiki/) for more detailed guidance.
+
+*Note*: Always ensure that your environment variables and paths are correctly set to maintain a stable NixOS environment. 
