@@ -61,3 +61,14 @@ The output should match `6.13.0-rc5`.
 
 ### Alternative: Set Up as a Custom Kernel Package
 If you prefer to use a declarative approach in NixOS, you can define the kernel as a custom package in a `.nix` file. Let me know if you'd like help with that!
+
+
+
+
+  boot.kernelPackages = pkgs.linuxPackagesFor (pkgs.linux.override {
+    version = "6.13.0-rc5";
+    src = pkgs.fetchurl {
+      url = "https://github.com/Jackler87/linux/releases/download/v51/kernel-files-6.13.0-rc5-g28753b266944.tar.gz";
+      sha256 = "your_sha256_hash_here"; # Replace with the actual SHA-256 hash
+    };
+  });
