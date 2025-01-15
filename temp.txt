@@ -1,76 +1,63 @@
-It seems you're encountering the error `bash: nixpkgs: no such file or directory` when attempting to set up a custom Linux kernel in NixOS. This issue typically arises when the Nix package repository (`nixpkgs`) isn't properly referenced or available in your environment. Let's address this step by step.
+You're right; the kernel appears to already be compiled, as the `vmlinuz` and `System.map` files are present in the directory. This simplifies the process since you don't need to compile the kernel from source. Instead, you'll focus on installing the precompiled kernel in NixOS.
 
-**1. Verify Nixpkgs Availability**
+Here's how you can proceed:
 
-First, ensure that `nixpkgs` is accessible:
+---
 
-```bash
-nix-shell -p hello
-```
-
-If this command fails with an error related to `nixpkgs`, it indicates that `nixpkgs` isn't properly set up.
-
-**2. Set the NIX_PATH Environment Variable**
-
-The `NIX_PATH` environment variable should point to your Nix channels, including `nixpkgs`. Check its current value:
+### 1. **Move the Kernel Files**
+Ensure the kernel files are in a directory that you can reference later. For simplicity, you can copy them to `/boot`:
 
 ```bash
-echo $NIX_PATH
+sudo cp vmlinuz-6.13.0-rc5-g28753b266944 /boot/vmlinuz-6.13.0-rc5
+sudo cp System.map-6.13.0-rc5-g28753b266944 /boot/System.map-6.13.0-rc5
 ```
 
-If it's empty or doesn't include `nixpkgs`, you can set it temporarily:
+---
 
-```bash
-export NIX_PATH=nixpkgs=/path/to/nixpkgs
+### 2. **Update the NixOS Configuration**
+Add a reference to the custom kernel in your `configuration.nix`:
+
+```nix
+{
+  boot.kernelPackages = pkgs.linuxPackages_5_15.override {
+    kernel = "/boot/vmlinuz-6.13.0-rc5";
+    kernelSystemMap = "/boot/System.map-6.13.0-rc5";
+  };
+}
 ```
 
-Replace `/path/to/nixpkgs` with the actual path. For a more permanent solution, add this line to your shell configuration file (e.g., `~/.bashrc`).
+---
 
-**3. Update Nix Channels**
-
-Ensure your Nix channels are up-to-date:
-
-```bash
-nix-channel --update
-```
-
-This command updates the list of available packages and ensures `nixpkgs` is correctly referenced.
-
-**4. Verify Nixpkgs Channel**
-
-Check if the `nixpkgs` channel is correctly set:
-
-```bash
-nix-channel --list
-```
-
-You should see an entry like:
-
-```
-nixpkgs https://nixos.org/channels/nixpkgs-unstable
-```
-
-If `nixpkgs` is missing, add it:
-
-```bash
-nix-channel --add https://nixos.org/channels/nixpkgs-unstable nixpkgs
-nix-channel --update
-```
-
-**5. Rebuild Your NixOS Configuration**
-
-After ensuring `nixpkgs` is properly set, rebuild your NixOS configuration:
+### 3. **Rebuild the NixOS Configuration**
+Apply the changes to your NixOS configuration:
 
 ```bash
 sudo nixos-rebuild switch
 ```
 
-This applies any changes and ensures your system recognizes the updated package paths.
+This step updates the system configuration and ensures the boot loader references the new kernel.
 
-**6. Proceed with Custom Kernel Setup**
+---
 
-With `nixpkgs` accessible, you can proceed with setting up your custom kernel as previously outlined. Ensure that all file paths and environment variables are correctly configured to prevent similar errors.
+### 4. **Reboot into the New Kernel**
+Reboot your system:
 
-If you continue to experience issues, consider consulting the [NixOS Discourse](https://discourse.nixos.org/) or the [NixOS Wiki](https://nixos.wiki/) for more detailed guidance.
+```bash
+sudo reboot
+```
 
-*Note*: Always ensure that your environment variables and paths are correctly set to maintain a stable NixOS environment. 
+---
+
+### 5. **Verify the Kernel Version**
+After rebooting, check that the new kernel is running:
+
+```bash
+uname -r
+```
+
+The output should match `6.13.0-rc5`.
+
+---
+
+### Alternative: Set Up as a Custom Kernel Package
+If you prefer to use a declarative approach in NixOS, you can define the kernel as a custom package in a `.nix` file. Let me know if you'd like help with that!
